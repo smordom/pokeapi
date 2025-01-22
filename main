@@ -1,0 +1,23 @@
+from fastapi import FastAPI
+import uvicorn, requests
+
+
+## En primer lugar vamos a levanaar el servidor de FastAPI y comprobar que funciona correctamente.
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+@app.get("/pokemon/{pokemon_id}")
+def get_pokemones():
+    url = "https://pokeapi.co/api/v2/pokemon/{pokemon_id}"
+    req = requests.get(url)
+    if req.status_code == 200:
+        print(req.json())
+        return req.json()
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=443)
+
