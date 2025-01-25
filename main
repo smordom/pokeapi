@@ -1,23 +1,37 @@
 from fastapi import FastAPI
 import uvicorn, requests
-
+from fastapi.responses import HTMLResponse
 
 ## En primer lugar vamos a levanaar el servidor de FastAPI y comprobar que funciona correctamente.
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
 @app.get("/pokemon/{pokemon_id}")
-def get_pokemones():
-    url = "https://pokeapi.co/api/v2/pokemon/{pokemon_id}"
+async def get_pokemones(pokemon_id :int):
+    url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_id}"
     req = requests.get(url)
+    
     if req.status_code == 200:
-        print(req.json())
-        return req.json()
+        answer = req.json()
+        sprite_url = answer['sprites']['front_default']
+        print(f"El resultado de la respuesta es el pokemon con ID: ", answer['id'], "y de nombre", answer['name'])
+        return {"id del pokemon:": answer['id'],
+                "Nombre del pokemon": answer['name'],
+                "Imagen del pokemon:": sprite_url
+        }
+
+@app.get("/pokemon/{pokemon_id}/base_stats")
+async def base_stats(pokemon_id):
+    url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_id}"
+    req = requests.get(url)
+
+    if req.status_code == 200:
+        answer = req.json()
+        poke_stats = {stat['stat']['name']: stat['base_stat'] for stat in answer['stats']}
+        return {"El nombre del pokemon es: ": answer['name'],
+                "Las estadísticas base del pokemon son las siguientes: ": poke_stats 
+                }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=443)
+    uvicorn.run(app, host="127.0.0.1", port=8080)
 
